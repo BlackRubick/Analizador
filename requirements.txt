@@ -1,0 +1,7 @@
+# requirements.txt para el backend de análisis de huella plantar
+fastapi
+uvicorn
+opencv-python
+numpy
+mediapipe
+dataclasses; python_version<'3.7'
