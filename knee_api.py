@@ -44,6 +44,7 @@ class PoseDetector:
         self.pose = self.mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.5)
 
     def detect(self, image):
+        img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         results = self.pose.process(img_rgb)
         if not results.pose_landmarks:
             raise Exception("No landmarks")
@@ -57,6 +58,7 @@ class PoseDetector:
             "right_knee": (int(lm[self.mp_pose.PoseLandmark.RIGHT_KNEE].x * w), int(lm[self.mp_pose.PoseLandmark.RIGHT_KNEE].y * h)),
             "right_ankle": (int(lm[self.mp_pose.PoseLandmark.RIGHT_ANKLE].x * w), int(lm[self.mp_pose.PoseLandmark.RIGHT_ANKLE].y * h)),
             "right_shoulder": (int(lm[self.mp_pose.PoseLandmark.RIGHT_SHOULDER].x * w), int(lm[self.mp_pose.PoseLandmark.RIGHT_SHOULDER].y * h)),
+            "left_shoulder": (int(lm[self.mp_pose.PoseLandmark.LEFT_SHOULDER].x * w), int(lm[self.mp_pose.PoseLandmark.LEFT_SHOULDER].y * h)),
         }
 
 # -------- ENDPOINTS --------
