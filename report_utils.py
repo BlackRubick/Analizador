@@ -254,8 +254,49 @@ def generate_report_pdf(data):
 
         y -= 10
 
+
         # Imágenes asociadas
         imagenes = bloque.get("imagenes", [])
+        # Si es bloque de cadenas miofasciales, intentar mostrar la imagen original subida
+        if "cadena" in bloque.get("titulo", "").lower() and data.get("imagen_original"):
+            try:
+                img_bytes = base64.b64decode(data["imagen_original"])
+                with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
+                    tmp.write(img_bytes)
+                    tmp.flush()
+                    if y < 200:
+                        page_num += 1
+                        y = new_page(c, width, height, page_num)
+                        y -= 10
+                    img_w, img_h = 190, 130
+                    c.setStrokeColor(DIVIDER)
+                    c.setLineWidth(0.8)
+                    c.setFillColor(WHITE)
+                    c.roundRect(MARGIN_L + 8, y - img_h - 24, img_w + 8, img_h + 22, 5, fill=1, stroke=1)
+                    c.setFillColor(PRIMARY)
+                    c.setFont("Helvetica-Bold", 8)
+                    c.drawString(MARGIN_L + 16, y - 14, "Imagen original subida")
+                    c.drawImage(
+                        ImageReader(tmp.name),
+                        MARGIN_L + 12, y - img_h - 18,
+                        width=img_w, height=img_h,
+                        preserveAspectRatio=True,
+                        mask='auto'
+                    )
+                    y -= img_h + 32
+                    os.unlink(tmp.name)
+                    if y < 150:
+                        page_num += 1
+                        y = new_page(c, width, height, page_num)
+                        y -= 10
+            except Exception as e:
+                c.setFillColor(colors.HexColor("#FFF5F5"))
+                c.roundRect(MARGIN_L + 8, y - 20, COL_WIDTH - 8, 20, 3, fill=1, stroke=0)
+                c.setFillColor(colors.HexColor("#C53030"))
+                c.setFont("Helvetica", 8)
+                c.drawString(MARGIN_L + 16, y - 13, f"Error al cargar imagen original: {e}")
+                y -= 28
+        # Mostrar otras imágenes asociadas normalmente
         for img_dict in imagenes:
             img_titulo = img_dict.get("titulo", "Imagen")
             img_b64 = img_dict.get("base64")
@@ -265,26 +306,18 @@ def generate_report_pdf(data):
                     with tempfile.NamedTemporaryFile(delete=False, suffix='.png') as tmp:
                         tmp.write(img_bytes)
                         tmp.flush()
-
                         if y < 200:
                             page_num += 1
                             y = new_page(c, width, height, page_num)
                             y -= 10
-
                         img_w, img_h = 190, 130
-
-                        # Tarjeta de imagen con borde
                         c.setStrokeColor(DIVIDER)
                         c.setLineWidth(0.8)
                         c.setFillColor(WHITE)
                         c.roundRect(MARGIN_L + 8, y - img_h - 24, img_w + 8, img_h + 22, 5, fill=1, stroke=1)
-
-                        # Título de imagen
                         c.setFillColor(PRIMARY)
                         c.setFont("Helvetica-Bold", 8)
                         c.drawString(MARGIN_L + 16, y - 14, img_titulo)
-
-                        # Imagen
                         c.drawImage(
                             ImageReader(tmp.name),
                             MARGIN_L + 12, y - img_h - 18,
@@ -294,12 +327,10 @@ def generate_report_pdf(data):
                         )
                         y -= img_h + 32
                         os.unlink(tmp.name)
-
                         if y < 150:
                             page_num += 1
                             y = new_page(c, width, height, page_num)
                             y -= 10
-
                 except Exception as e:
                     c.setFillColor(colors.HexColor("#FFF5F5"))
                     c.roundRect(MARGIN_L + 8, y - 20, COL_WIDTH - 8, 20, 3, fill=1, stroke=0)
