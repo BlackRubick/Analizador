@@ -237,9 +237,9 @@ def generate_report_pdf(data):
 
         # Métricas
         if bloque.get("metricas"):
-            # Si es bloque de cadenas miofasciales, omitir COMPLETAMENTE el bloque de indicadores
+            # Si es bloque de cadenas miofasciales, solo ocultar el bloque de indicadores y métricas
             if "cadena" in bloque.get("titulo", "").lower():
-                pass  # No mostrar nada de indicadores ni métricas
+                pass  # Mostrar título, tipo y explicación (ya se muestran arriba), pero NO indicadores ni métricas
             else:
                 metricas_filtradas = [met for met in bloque["metricas"] if not ("ancho" in met.lower() or "x:" in met.lower() or "y:" in met.lower())]
                 if metricas_filtradas:
