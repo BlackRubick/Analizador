@@ -70,6 +70,8 @@ def analyze_muscle_chain(file: UploadFile = File(...)):
     img = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
     if img is None:
         return JSONResponse(status_code=400, content={"error": "Imagen inválida"})
+    import base64
+    img_b64 = base64.b64encode(image_bytes).decode('utf-8')
     detector = PoseDetector()
     try:
         lm = detector.detect(img)
@@ -141,7 +143,8 @@ def analyze_muscle_chain(file: UploadFile = File(...)):
             "left_hip_angle": ang_left_hip,
             "right_hip_angle": ang_right_hip,
             "left_ankle_angle": ang_left_ankle,
-            "right_ankle_angle": ang_right_ankle
+            "right_ankle_angle": ang_right_ankle,
+            "imagen_original": img_b64
         }
     except Exception as e:
         import traceback
