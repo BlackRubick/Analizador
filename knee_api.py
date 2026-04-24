@@ -44,7 +44,6 @@ class PoseDetector:
         self.pose = self.mp_pose.Pose(static_image_mode=True, min_detection_confidence=0.5)
 
     def detect(self, image):
-        img_rgb = cv2.cvtColor(image, cv2.COLOR_BGR2RGB)
         results = self.pose.process(img_rgb)
         if not results.pose_landmarks:
             raise Exception("No landmarks")
@@ -57,7 +56,6 @@ class PoseDetector:
             "right_hip": (int(lm[self.mp_pose.PoseLandmark.RIGHT_HIP].x * w), int(lm[self.mp_pose.PoseLandmark.RIGHT_HIP].y * h)),
             "right_knee": (int(lm[self.mp_pose.PoseLandmark.RIGHT_KNEE].x * w), int(lm[self.mp_pose.PoseLandmark.RIGHT_KNEE].y * h)),
             "right_ankle": (int(lm[self.mp_pose.PoseLandmark.RIGHT_ANKLE].x * w), int(lm[self.mp_pose.PoseLandmark.RIGHT_ANKLE].y * h)),
-            "left_shoulder": (int(lm[self.mp_pose.PoseLandmark.LEFT_SHOULDER].x * w), int(lm[self.mp_pose.PoseLandmark.LEFT_SHOULDER].y * h)),
             "right_shoulder": (int(lm[self.mp_pose.PoseLandmark.RIGHT_SHOULDER].x * w), int(lm[self.mp_pose.PoseLandmark.RIGHT_SHOULDER].y * h)),
         }
 
@@ -83,7 +81,7 @@ def analyze_muscle_chain(file: UploadFile = File(...)):
             raise ValueError("No se detectaron hombros para análisis de cadena completa.")
         ang_left_hip = angle_between_points(lm["left_shoulder"], lm["left_hip"], lm["left_knee"])
         ang_right_hip = angle_between_points(lm["right_shoulder"], lm["right_hip"], lm["right_knee"])
-        ang_left_ankle = angle_between_points(lm["left_knee"], lm["left_ankle"], (lm["left_ankle"][0], lm["left_ankle"][1]+100))  # eje vertical
+        ang_left_ankle = angle_between_points(lm["left_knee"], lm["left_ankle"], (lm["left_ankle"][0], lm["left_ankle"][1]+100))
         ang_right_ankle = angle_between_points(lm["right_knee"], lm["right_ankle"], (lm["right_ankle"][0], lm["right_ankle"][1]+100))
 
         print("ANGULOS: Rodilla izq:", ang_left_knee, "Rodilla der:", ang_right_knee)
@@ -95,7 +93,6 @@ def analyze_muscle_chain(file: UploadFile = File(...)):
 
         # Rasgos descriptivos
         rasgos = [
-            f"Ángulo rodilla izquierda: {ang_left_knee:.1f}°",
             f"Ángulo rodilla derecha: {ang_right_knee:.1f}°",
             f"Ángulo cadera izquierda: {ang_left_hip:.1f}°",
             f"Ángulo cadera derecha: {ang_right_hip:.1f}°",
@@ -192,13 +189,13 @@ def draw_knee_frontal(image: np.ndarray):
     # Dibuja líneas: cadera→rodilla, rodilla→tobillo
     cv2.line(annotated, l_hip, l_knee, (0, 255, 0), 3)
     cv2.line(annotated, l_knee, l_ankle, (255, 0, 0), 3)
+    cv2.line(annotated, l_hip, l_knee, (0, 255, 0), 3)
+    cv2.line(annotated, l_knee, l_ankle, (255, 0, 0), 3)
     cv2.line(annotated, r_hip, r_knee, (0, 255, 0), 3)
     cv2.line(annotated, r_knee, r_ankle, (255, 0, 0), 3)
-    # Dibuja líneas desde cada rodilla hacia la entrepierna (ángulo visual, rojo brillante, grosor 7)
-    cv2.line(annotated, l_knee, crotch, (0, 0, 255), 7)  # Rojo
-    cv2.line(annotated, r_knee, crotch, (0, 0, 255), 7)  # Rojo
-    # Resalta el punto de la entrepierna
-    cv2.circle(annotated, crotch, 16, (0, 0, 255), -1)  # Círculo grande rojo
+    cv2.line(annotated, l_knee, crotch, (0, 0, 255), 7)
+    cv2.line(annotated, r_knee, crotch, (0, 0, 255), 7)
+    cv2.circle(annotated, crotch, 16, (0, 0, 255), -1)
     cv2.putText(annotated, 'Entrepierna', (crotch[0]-40, crotch[1]-20), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0,0,255), 2)
     # Ángulo tibiofemoral izquierdo y derecho (cadera-rodilla-entrepierna)
     angle_left = angle_between_points(l_hip, l_knee, crotch)

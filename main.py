@@ -14,7 +14,7 @@ from knee_api import router as knee_router
 app = FastAPI()
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # O puedes poner ["http://localhost:5173"]
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -23,7 +23,6 @@ app.include_router(knee_router)
 
 @app.post("/analyze-foot/")
 def analyze_foot(file: UploadFile = File(...)):
-    # Leer imagen
     image_bytes = file.file.read()
     npimg = np.frombuffer(image_bytes, np.uint8)
     img = cv2.imdecode(npimg, cv2.IMREAD_COLOR)
@@ -38,20 +37,15 @@ def analyze_foot(file: UploadFile = File(...)):
         PX_TO_CM = 60.0 / 1600.0
         x_width_cm = hc_result.x_width * PX_TO_CM
         y_width_cm = hc_result.y_width * PX_TO_CM
-        # --- Dibujo de líneas y etiquetas X/Y en la imagen original ---
         annotated = img.copy()
-        # Línea X (ancho máximo antepié)
         x_row = widths_info["x_row"]
         x_min, x_max = widths_info["x_min"], widths_info["x_max"]
         cv2.line(annotated, (x_min, x_row), (x_max, x_row), (0, 255, 0), 3)
         cv2.putText(annotated, f"X: {x_width_cm:.2f} cm", (x_min + 5, x_row - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 0), 2)
-        # Línea Y (ancho mínimo arco)
         y_row = widths_info["y_row"]
         cv2.line(annotated, (x_min, y_row), (x_max, y_row), (0, 255, 255), 3)
         cv2.putText(annotated, f"Y: {y_width_cm:.2f} cm", (x_min + 5, y_row - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.9, (0, 255, 255), 2)
-        # Contorno del pie
         cv2.drawContours(annotated, [contour], -1, (255, 0, 255), 2)
-        # Codificar imagen anotada a base64
         _, buffer = cv2.imencode('.png', annotated)
         import base64
         annotated_b64 = base64.b64encode(buffer).decode('utf-8')

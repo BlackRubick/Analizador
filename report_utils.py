@@ -9,52 +9,43 @@ import tempfile
 import os
 
 
-# ─── PALETA DE COLORES NEXO POSTURAL ────────────────────────────────────────
-PRIMARY       = colors.HexColor("#0D2B4E")   # Azul marino profundo
-ACCENT        = colors.HexColor("#1A7ABA")   # Azul clínico
-ACCENT_LIGHT  = colors.HexColor("#E8F4FD")   # Fondo sutil azul
-GOLD          = colors.HexColor("#C8962E")   # Dorado (detalles de marca)
-TEXT_DARK     = colors.HexColor("#1C1C2E")   # Texto principal
-TEXT_MID      = colors.HexColor("#4A5568")   # Texto secundario
-TEXT_LIGHT    = colors.HexColor("#718096")   # Texto terciario
-DIVIDER       = colors.HexColor("#CBD5E0")   # Líneas divisoras
+PRIMARY       = colors.HexColor("#0D2B4E")
+ACCENT        = colors.HexColor("#1A7ABA")
+ACCENT_LIGHT  = colors.HexColor("#E8F4FD")
+GOLD          = colors.HexColor("#C8962E")
+TEXT_DARK     = colors.HexColor("#1C1C2E")
+TEXT_MID      = colors.HexColor("#4A5568")
+TEXT_LIGHT    = colors.HexColor("#718096")
+DIVIDER       = colors.HexColor("#CBD5E0")
 WHITE         = colors.white
-PAGE_BG       = colors.HexColor("#F7FAFC")   # Fondo de página
+PAGE_BG       = colors.HexColor("#F7FAFC")
 
 MARGIN_L = 48
 MARGIN_R = 48
 COL_WIDTH = letter[0] - MARGIN_L - MARGIN_R
 
 
-# ─── UTILIDADES DE DIBUJO ────────────────────────────────────────────────────
 
 def draw_background(c, width, height):
-    """Fondo sutil en toda la página."""
     c.setFillColor(PAGE_BG)
     c.rect(0, 0, width, height, fill=1, stroke=0)
 
 
 def draw_header(c, width, height):
-    """Encabezado con banda de color, logo textual y subtítulo de marca."""
-    # Banda superior
     c.setFillColor(PRIMARY)
     c.rect(0, height - 72, width, 72, fill=1, stroke=0)
 
-    # Línea de acento dorado
     c.setFillColor(GOLD)
     c.rect(0, height - 75, width, 3, fill=1, stroke=0)
 
-    # Nombre de la app
     c.setFillColor(WHITE)
     c.setFont("Helvetica-Bold", 22)
     c.drawString(MARGIN_L, height - 46, "NEXO POSTURAL")
 
-    # Tagline
     c.setFillColor(ACCENT_LIGHT)
     c.setFont("Helvetica", 9)
     c.drawString(MARGIN_L, height - 62, "Análisis Clínico Postural  ·  Reporte Profesional")
 
-    # Número de página (placeholder; se sobrescribe por página)
     return height - 90  # y inicial tras header
 
 
@@ -246,16 +237,19 @@ def generate_report_pdf(data):
 
         # Métricas
         if bloque.get("metricas"):
-            c.setFillColor(TEXT_LIGHT)
-            c.setFont("Helvetica", 7.5)
-            c.drawString(MARGIN_L + 10, y, "INDICADORES")
-            y -= 18  # espacio entre etiqueta y primera fila
-            for idx, met in enumerate(bloque["metricas"]):
-                if y < 100:
-                    page_num += 1
-                    y = new_page(c, width, height, page_num)
-                    y -= 10
-                y = draw_metric_row(c, y, met, width, alternate=(idx % 2 == 0))
+            # Filtrar métricas para NO mostrar las de ancho X/Y
+            metricas_filtradas = [met for met in bloque["metricas"] if not ("ancho" in met.lower() or "x:" in met.lower() or "y:" in met.lower())]
+            if metricas_filtradas:
+                c.setFillColor(TEXT_LIGHT)
+                c.setFont("Helvetica", 7.5)
+                c.drawString(MARGIN_L + 10, y, "INDICADORES")
+                y -= 18  # espacio entre etiqueta y primera fila
+                for idx, met in enumerate(metricas_filtradas):
+                    if y < 100:
+                        page_num += 1
+                        y = new_page(c, width, height, page_num)
+                        y -= 10
+                    y = draw_metric_row(c, y, met, width, alternate=(idx % 2 == 0))
 
         y -= 10
 
