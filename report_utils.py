@@ -237,19 +237,22 @@ def generate_report_pdf(data):
 
         # Métricas
         if bloque.get("metricas"):
-            # Filtrar métricas para NO mostrar las de ancho X/Y
-            metricas_filtradas = [met for met in bloque["metricas"] if not ("ancho" in met.lower() or "x:" in met.lower() or "y:" in met.lower())]
-            if metricas_filtradas:
-                c.setFillColor(TEXT_LIGHT)
-                c.setFont("Helvetica", 7.5)
-                c.drawString(MARGIN_L + 10, y, "INDICADORES")
-                y -= 18  # espacio entre etiqueta y primera fila
-                for idx, met in enumerate(metricas_filtradas):
-                    if y < 100:
-                        page_num += 1
-                        y = new_page(c, width, height, page_num)
-                        y -= 10
-                    y = draw_metric_row(c, y, met, width, alternate=(idx % 2 == 0))
+            # Si es bloque de cadenas miofasciales, omitir COMPLETAMENTE el bloque de indicadores
+            if "cadena" in bloque.get("titulo", "").lower():
+                pass  # No mostrar nada de indicadores ni métricas
+            else:
+                metricas_filtradas = [met for met in bloque["metricas"] if not ("ancho" in met.lower() or "x:" in met.lower() or "y:" in met.lower())]
+                if metricas_filtradas:
+                    c.setFillColor(TEXT_LIGHT)
+                    c.setFont("Helvetica", 7.5)
+                    c.drawString(MARGIN_L + 10, y, "INDICADORES")
+                    y -= 18  # espacio entre etiqueta y primera fila
+                    for idx, met in enumerate(metricas_filtradas):
+                        if y < 100:
+                            page_num += 1
+                            y = new_page(c, width, height, page_num)
+                            y -= 10
+                        y = draw_metric_row(c, y, met, width, alternate=(idx % 2 == 0))
 
         y -= 10
 
